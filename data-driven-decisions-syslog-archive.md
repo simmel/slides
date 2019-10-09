@@ -1,7 +1,6 @@
 class: center, middle
 layout: true
 .footer[2019-05-22 / Simon Lundström, IT-avdelningen]
-<div class="su-logo" style="position: absolute; top: 0px; right: 0px; height: 128px; width: 128px;"></div>
 
 ---
 
