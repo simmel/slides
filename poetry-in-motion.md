@@ -42,6 +42,9 @@ the project.
 * [pyproject.toml PEP 518 standard](https://www.python.org/dev/peps/pep-0518/)
   * To quote [Black](https://black.readthedocs.io/en/stable/pyproject_toml.html#what-on-earth-is-a-pyproject-toml-file):
   > […]it can fully replace the need for setup.py and setup.cfg files.
+--
+
+* Your lib/app can be installed via `pip install`, no other tool needed.
 
 ---
 # Why not Zoidberg 🦞?
@@ -58,6 +61,8 @@ There are of course alternatives
 # Why not ~~Zoidberg 🦞~~ …?
 ##  setup.py
 ##  Pipenv
+???
+The two biggest contenders
 ---
 # Why not ~~Zoidberg 🦞~~ …?
 ##  setup.py
@@ -89,7 +94,7 @@ And then you don't get updates
 ???
 Version tag can be overwritten. Same tag, new content. Hello malware!
 
-PyPI doesn't allow this, but Git does. And libs can be installed straight from git.
+PyPI doesn't allow this, but Git (and our Nexus apparently) does. And libs can be installed straight from git.
 
 https://mail.python.org/pipermail/distutils-sig/2015-January/025683.html
 
@@ -253,6 +258,8 @@ $ twine --sign upload dist/*
 ---
 # Why not ~~Zoidberg 🦞~~ …?
 ## Pipenv
+
+--
 * [Can't be used for libraries](https://pipenv.pypa.io/en/latest/advanced/#pipfile-vs-setuppy)
 
 --
@@ -273,19 +280,24 @@ So if we use multiple versions of Python Pipfile.lock shouldn't be used?
 Doesn't that defeat the purpose?
 
 --
-* https://chriswarrick.com/blog/2018/07/17/pipenv-promises-a-lot-delivers-very-little/
-* https://pythonspeed.com/articles/pipenv-docker/
-* A lot of people have optinions https://duckduckgo.com/?q=pipenv+poetry
+* Others have opinions too:
+  * https://chriswarrick.com/blog/2018/07/17/pipenv-promises-a-lot-delivers-very-little/
+  * https://pythonspeed.com/articles/pipenv-docker/
+  * https://duckduckgo.com/?q=pipenv+poetry
 
 ---
 
 # Create a Python library
 * Initialize with Poetry
 * Git init
+* Configure proxy repo
+* Install deps
 * Add dev tools
 * Add hello function
 * Make release
 * Upload to Nexus
+* Configure our Nexus repo
+* Publish
 
 ---
 
@@ -301,7 +313,6 @@ $ $EDITOR pyproject.toml
 $ poetry env use 3
 $ poetry env list --full-path
 ```
-
 --
 
 * Hey, where's my virtualenv!?
@@ -310,7 +321,6 @@ $ poetry env list --full-path
 ```terminal
 $ poetry env list --full-path
 ```
-
 --
 * Want them in the project folder?
 ```terminal
@@ -326,51 +336,10 @@ See https://python-poetry.org/docs/configuration/#virtualenvsin-project-boolean
 ???
 ```terminal
 $ git init
-$ git add *
 $ curl -JL -o .gitignore 'https://raw.githubusercontent.com/github/gitignore/master/Python.gitignore'
+$ git add *
 $ git commit -m 'init'
 ```
---
-  * Install deps
-???
-```terminal
-$ poetry install
-$ git status
-$ git add poetry.lock
-```
---
-* Add dev tools
-
-???
-```terminal
-$ poetry add --dev isort==4.3.9 yapf pylint
-$ git status
-$ git diff pyproject.toml
-$ git commit -am 'Add dev tools'
-$ echo -m 'ignore=missing-module-docstring,missing-function-docstring' > .pylintrc
-```
---
-
-* Add hello function
-
-???
-```terminal
-$ poetry run python3
-```
-
---
-* Make release
-
-???
-```terminal
-$ poetry version -s
-$ git tag 0.1.0 -m 0.1.0
-$ poetry build
-```
-
----
-* Upload to Nexus
-
 --
 * Configure proxy repo
 ???
@@ -386,15 +355,60 @@ default = true
 ```
 --
 
+* Install deps
+???
+```terminal
+$ poetry install
+$ git status
+$ git add poetry.lock
+```
+Show `poetry.lock` with exact versions and hash sums
+---
+
+# Create a Python library
+* Initialize with Poetry
+* Git init
+* Configure proxy repo
+* Install deps
+* Add dev tools
+
+???
+```terminal
+$ poetry add --dev isort==4.3.9 yapf pylint
+$ git status
+$ git diff pyproject.toml
+$ echo -m 'ignore=missing-module-docstring,missing-function-docstring' > .pylintrc
+$ git commit -am 'Add dev tools'
+```
+--
+* Add hello function
+
+???
+```terminal
+$ poetry run python3
+```
+
+--
+* Make release
+
+???
+```terminal
+$ poetry version -s
+$ git tag 1.0.0 -m 1.0.0
+$ poetry build
+```
+--
+* Upload to Nexus
+
+--
 * Configure our Nexus repo
 ```terminal
 $ poetry config http-basic.su simlu@su.se $(pass show work/nexus) # Doesn't work ATM
 $ poetry config repositories.su https://maven.it.su.se/repository/su-pypi/
 ```
-
 --
-
 * Publish
+???
 ```terminal
 $ poetry publish --repository su
 ```
@@ -402,10 +416,164 @@ $ poetry publish --repository su
 ---
 
 # Create an Python application
-3. Skapa en app som använder liben
-* Publicera till vår Nexus
-* Installera appen via pipx
+* Initialize with Poetry
+* Git init
+* Configure Nexus proxy
+* Add dev tools
+* Add hello script/binary
+* Add hellolib dependency
+* Improve application
+* Make release and publish
+* Install via pipx
 
 ---
 
+# Create an Python application
+* Initialize with Poetry
+???
+```terminal
+$ poetry new --src helloapp
+$ asdf local python 3.5.3
+$ $EDITOR pyproject.toml
+# s/3.7/3.5/ Poetry is installed with python 3.7 hence the default
+# BSD-3-Clause
+$ poetry env use 3
+```
+
+---
+# Create an Python application
+* Initialize with Poetry
+* Git init
+
+???
+```terminal
+$ git init
+$ curl -JL -o .gitignore 'https://raw.githubusercontent.com/github/gitignore/master/Python.gitignore'
+$ git add *
+$ git commit -m 'init'
+```
+--
+* Configure Nexus proxy
+???
+`pyproject.toml`:
+```toml
+[[tool.poetry.source]]
+name = "su"
+url = "https://maven.it.su.se/repository/su-pypi-group/simple"
+default = true
+```
+```terminal
+$ poetry install
+$ git status
+$ git add poetry.lock
+```
+--
+
+* Add dev tools
+
+???
+```terminal
+$ poetry add --dev isort==4.3.9 yapf pylint
+$ git status
+$ git diff pyproject.toml
+$ echo -m 'ignore=missing-module-docstring,missing-function-docstring' > .pylintrc
+$ git commit -am 'Add dev tools'
+```
+---
+
+# Create an Python application
+* Initialize with Poetry
+* Git init
+* Configure Nexus proxy
+* Add dev tools
+* Add hello script/binary
+
+???
+`pyproject.toml`:
+```toml
+[tool.poetry.scripts]
+helloapp = 'helloapp:main'
+```
+```terminal
+$ poetry run helloapp
+$ git ci -m 'Add main'
+```
+--
+* Add hellolib dependency
+???
+```terminal
+$ poetry add hellolib
+$ git ci -m 'Add main'
+```
+--
+
+* Improve application
+
+???
+https://docs.python.org/3.5/library/argparse.html
+
+--
+* Make release and publish
+???
+```terminal
+$ poetry version -s
+$ git tag 1.0.0 -m 1.0.0
+$ poetry publish --build --repository su
+```
+--
+
+* Install via pipx
+```terminal
+$ pipx install --index-url https://maven.it.su.se/repository/su-pypi-group/simple helloapp
+```
+---
 # Questions?
+---
+# Bonus slides
+
+--
+* Improve lib
+* Release new version of lib
+* Improve app
+* Release new version of app
+* Upgrade with pipx
+---
+# Bonus slides
+
+--
+* Improve lib
+
+--
+* Release new version of lib
+???
+```terminal
+$ poetry version minor
+```
+--
+
+* Improve app
+???
+```terminal
+$ poetry update hellolib
+```
+--
+
+* Release new version of app
+???
+```terminal
+$ poetry version minor
+$ git tag 1.1.0 -m 1.1.0
+$ poetry publish --build --repository su
+```
+--
+
+* Upgrade with pipx
+???
+```terminal
+$ pipx upgrade --index-url https://maven.it.su.se/repository/su-pypi-group/simple helloapp
+```
+---
+# More questions?
+--
+
+Slides at https://github.com/simmel/slides via https://github.com/stockholmuniversity/su-remark-template/
