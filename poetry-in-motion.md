@@ -403,9 +403,11 @@ $ poetry build
 --
 * Configure our Nexus repo
 ```terminal
-$ poetry config http-basic.su simlu@su.se $(pass show work/nexus) # Doesn't work ATM
+$ poetry config http-basic.su simlu@su.se $(pass show work/nexus)
 $ poetry config repositories.su https://maven.it.su.se/repository/su-pypi/
 ```
+???
+Saves password in "keyring"
 --
 * Publish
 ???
