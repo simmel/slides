@@ -420,7 +420,7 @@ $ poetry publish --repository su
 # Create an Python application
 * Initialize with Poetry
 * Git init
-* Configure Nexus proxy
+* Configure proxy repo
 * Add dev tools
 * Add hello script/binary
 * Add hellolib dependency
@@ -455,7 +455,7 @@ $ git add *
 $ git commit -m 'init'
 ```
 --
-* Configure Nexus proxy
+* Configure proxy repo
 ???
 `pyproject.toml`:
 ```toml
@@ -486,7 +486,7 @@ $ git commit -am 'Add dev tools'
 # Create an Python application
 * Initialize with Poetry
 * Git init
-* Configure Nexus proxy
+* Configure proxy repo
 * Add dev tools
 * Add hello script/binary
 
